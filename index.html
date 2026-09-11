@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>보이는 라디오 고민상담소</title>
+    
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts: 'Jua' for a friendly, handwritten vibe -->
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Jua', sans-serif;
+            background-color: #fff9f0;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevent scrolling, act like a presentation */
+        }
+        
+        /* Slide transition animations */
+        .slide {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            transform: translateY(20px);
+        }
+        
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Editable title styling */
+        .editable-title {
+            border-bottom: 3px dashed #fcd34d;
+            transition: all 0.3s;
+            padding: 0 10px;
+        }
+        .editable-title:focus {
+            outline: none;
+            border-bottom: 3px solid #fbbf24;
+            background-color: rgba(253, 230, 138, 0.2);
+            border-radius: 8px;
+        }
+
+        /* Pulsing dot for "ON AIR" */
+        @keyframes pulse-red {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .on-air-dot {
+            animation: pulse-red 2s infinite;
+        }
+
+        /* Glassmorphism for bottom bar */
+        .glass-bar {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col bg-gradient-to-br from-amber-50 to-orange-100 text-gray-800">
+
+    <!-- Background Music Element (Looping) -->
+    <!-- Used raw.githubusercontent.com link so the audio plays directly -->
+    <audio id="bg-music" loop>
+        <source src="https://raw.githubusercontent.com/sae6gnicky/radio/main/radio.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Top Header / ON AIR Sign -->
+    <header class="w-full p-6 flex justify-between items-center absolute top-0 left-0 right-0 z-10 pointer-events-none">
+        <div class="flex items-center gap-4 bg-white/90 px-8 py-3 rounded-full shadow-lg border-2 border-red-200">
+            <div class="w-5 h-5 bg-red-500 rounded-full on-air-dot"></div>
+            <span class="text-red-500 font-black tracking-[0.2em] text-3xl drop-shadow-sm">ON AIR</span>
+        </div>
+        <div class="text-orange-400 opacity-70 text-3xl">
+            <i class="fa-solid fa-microphone-lines"></i>
+        </div>
+    </header>
+
+    <!-- Main Presentation Area -->
+    <main id="presentation-area" class="flex-grow flex items-center justify-center p-8 pb-24">
+        
+        <!-- Slide 1: Title & Start -->
+        <div id="slide-1" class="slide active flex-col items-center text-center w-full max-w-4xl">
+            <div class="mb-4 text-orange-400 text-6xl drop-shadow-md">
+                <i class="fa-solid fa-headphones-simple"></i>
+            </div>
+            
+            <!-- Rounded White Box for Title -->
+            <div class="bg-white/80 backdrop-blur-sm p-10 md:p-14 rounded-[3rem] shadow-2xl border-8 border-white/60 mb-8 w-full max-w-3xl mx-auto">
+                <!-- Editable Title -->
+                <h1 id="radio-title" contenteditable="true" spellcheck="false" class="editable-title text-5xl md:text-7xl font-bold text-gray-800 mb-6 leading-tight inline-block w-full">
+                    2학년 5반<br>고민상담소
+                </h1>
+                <p class="text-amber-600 text-lg bg-orange-50 px-6 py-3 rounded-full inline-block font-semibold shadow-inner">
+                    <i class="fa-solid fa-pen mr-2"></i>제목을 클릭해서 수정할 수 있어요!
+                </p>
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-6 mt-4 items-center justify-center">
+                <button type="button" onclick="startRadio()" class="group relative px-10 py-5 bg-gradient-to-r from-orange-400 to-amber-400 text-white text-3xl rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300">
+                    Start!
+                    <div class="absolute inset-0 h-full w-full rounded-full border-4 border-white/30 group-hover:animate-ping opacity-0 group-hover:opacity-100"></div>
+                </button>
+                
+                <button type="button" id="preload-cam-btn" onclick="startCamera(true)" class="px-8 py-5 bg-white text-amber-500 border-2 border-amber-300 rounded-full hover:bg-amber-50 transition-all shadow-xl font-bold inline-flex items-center gap-3 text-2xl">
+                    <i class="fa-solid fa-video"></i> 카메라 미리 켜기
+                </button>
+            </div>
+        </div>
+
+        <!-- Slide 2: Long Text -->
+        <div id="slide-2" class="slide flex-col items-center w-full max-w-5xl">
+            <div class="bg-white/90 p-10 md:p-16 rounded-3xl shadow-xl border-4 border-amber-100 relative">
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-amber-400 text-white px-8 py-3 rounded-full text-2xl shadow-lg whitespace-nowrap">
+                    우리반 고민 사연을 보내주세요
+                </div>
+                <div class="text-center mt-6 space-y-6 text-2xl md:text-3xl leading-relaxed text-gray-700">
+                    <p>우리반 친구들이 여러분의<br><span class="text-amber-500 font-bold text-4xl">마음과 고민에 함께 머물러 줄 거에요.</span></p>
+                    <p class="text-gray-600 text-xl md:text-2xl">상처도 꽁꽁 감추면 곪고 덧나듯이<br>힘든 일도 마찬가지랍니다.</p>
+                    <p>꺼내 놓고 훌훌 털어버리면<br><span class="text-orange-500">마음이 훨씬 가벼워질 거에요.</span></p>
+                    <div class="mt-8 pt-8 border-t-2 border-dashed border-gray-300">
+                        <p class="text-3xl md:text-4xl text-gray-800">
+                            서로의 고민에 진심으로 응답해줄 것을<br>
+                            <i class="fa-solid fa-handshake-angle text-amber-500 mr-2"></i>우리 모두 이 자리에서 약속해요!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Welcome Message -->
+        <div id="slide-3" class="slide flex-col items-center text-center w-full">
+            <div class="text-amber-400 text-8xl mb-8 opacity-80"><i class="fa-solid fa-broadcast-tower"></i></div>
+            <div class="bg-white/80 backdrop-blur-sm p-12 md:p-16 rounded-[3rem] shadow-2xl border-8 border-white/60 w-full max-w-4xl mx-auto">
+                <h2 class="text-6xl md:text-8xl text-gray-800 leading-tight font-bold">
+                    보이는 라디오에<br>오신 걸 환영 합니다!
+                </h2>
+            </div>
+        </div>
+
+        <!-- Slide 4: Dreaming Radio -->
+        <!-- Slide 4: Dreaming Radio -->
+        <div id="slide-4" class="slide flex-col items-center justify-center w-full h-full text-center">
+            <div class="relative">
+                <div class="absolute -inset-4 bg-gradient-to-r from-amber-300 to-orange-400 blur-xl opacity-50 rounded-full"></div>
+                <h2 class="relative text-7xl md:text-9xl text-white font-bold tracking-wider" style="text-shadow: 2px 4px 10px rgba(0,0,0,0.2);">
+                    꿈꾸는 라디오
+                </h2>
+            </div>
+            <div class="mt-12 text-2xl text-gray-600">
+                <i class="fa-solid fa-stars text-amber-400"></i> 사연을 만나볼 준비가 되었나요? <i class="fa-solid fa-stars text-amber-400"></i>
+            </div>
+        </div>
+
+        <!-- Slide 5: Camera Box (For Letters) -->
+        <div id="slide-5" class="slide flex-col items-center w-full h-full pb-8">
+            <h2 class="text-4xl md:text-5xl mb-4 text-gray-800 flex items-center gap-3 font-bold">
+                <i class="fa-solid fa-envelope-open-text text-amber-500"></i> 오늘의 사연
+            </h2>
+            
+            <!-- 투명한 레이아웃 컨테이너 (화면 최대한 꽉 차게) -->
+            <div class="w-full max-w-[98%] md:max-w-[98%] flex-grow relative flex flex-col md:flex-row gap-4 items-end px-2">
+                
+                <!-- Left: Camera Screen (Window) - 최대한 키우기, 초록색 바 삭제 -->
+                <div class="flex-grow w-full h-[65vh] md:h-full min-h-[450px] bg-[#fdf5e6] rounded-xl overflow-hidden relative flex flex-col shadow-2xl border-4 border-gray-300 mb-4 md:mb-0">
+                    
+                    <!-- Window Content -->
+                    <div class="flex-grow relative flex items-center justify-center bg-[#fdf5e6]">
+                        <video id="webcam-video" autoplay playsinline class="absolute inset-0 w-full h-full object-contain bg-black hidden"></video>
+                        
+                        <!-- Initial State / Start Button -->
+                        <div id="camera-overlay" class="z-10 flex flex-col items-center text-gray-500">
+                            <i class="fa-solid fa-camera-web text-7xl mb-4 opacity-40"></i>
+                            <p class="mb-6 text-2xl font-bold text-gray-600">학생들의 사연을 비춰주세요</p>
+                            <button type="button" onclick="startCamera()" class="px-8 py-4 bg-amber-500 hover:bg-amber-600 text-white rounded-full text-2xl shadow-lg transition flex items-center gap-3">
+                                <i class="fa-solid fa-video"></i> 화상기/카메라 켜기
+                            </button>
+                        </div>
+                        
+                        <button type="button" onclick="stopCamera()" id="stop-cam-btn" class="hidden absolute top-4 right-4 z-20 px-6 py-3 bg-red-500/90 hover:bg-red-600 text-white rounded-full shadow-lg backdrop-blur transition font-bold text-lg">
+                            <i class="fa-solid fa-video-slash"></i> 카메라 끄기
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right: DJ Graphic - 크기 70% 축소, 그림자 제거, 우측 끝 배치 -->
+                <div class="w-full md:w-[250px] lg:w-[315px] flex-shrink-0 flex items-end justify-end relative">
+                    <img src="https://raw.githubusercontent.com/sae6gnicky/radio/main/Gemini_Generated_Image_8oxl2m8oxl2m8oxl.png" alt="라디오 DJ" class="w-full h-auto max-h-[40vh] object-contain">
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Outro -->
+        <div id="slide-6" class="slide flex-col items-center justify-center text-center w-full">
+            <div class="text-orange-400 text-7xl mb-8 animate-bounce"><i class="fa-regular fa-face-smile-wink"></i></div>
+            <div class="bg-white/80 backdrop-blur-sm p-12 md:p-16 rounded-[3rem] shadow-2xl border-8 border-white/60 w-full max-w-4xl mx-auto">
+                <h2 class="text-6xl md:text-8xl text-gray-800 leading-tight font-bold">
+                    다음에 만나요<br>안녕~
+                </h2>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Bottom Controls Bar -->
+    <footer class="fixed bottom-0 left-0 right-0 h-24 glass-bar shadow-[0_-10px_40px_rgba(0,0,0,0.05)] flex items-center justify-between px-6 md:px-12 z-20">
+        
+        <!-- Audio Controls -->
+        <div class="flex items-center gap-4">
+            <div class="text-gray-500 text-sm hidden md:block mr-2 font-bold tracking-wide">BGM</div>
+            <button type="button" onclick="playMusic()" class="w-12 h-12 flex items-center justify-center bg-gray-100 hover:bg-amber-100 text-gray-700 hover:text-amber-600 rounded-full shadow transition" title="재생">
+                <i class="fa-solid fa-play"></i>
+            </button>
+            <button type="button" onclick="pauseMusic()" class="w-12 h-12 flex items-center justify-center bg-gray-100 hover:bg-amber-100 text-gray-700 hover:text-amber-600 rounded-full shadow transition" title="일시정지">
+                <i class="fa-solid fa-pause"></i>
+            </button>
+            <button type="button" onclick="stopMusic()" class="w-12 h-12 flex items-center justify-center bg-gray-100 hover:bg-red-100 text-gray-700 hover:text-red-500 rounded-full shadow transition" title="정지">
+                <i class="fa-solid fa-stop"></i>
+            </button>
+            
+            <!-- Music Animation Equalizer (Visual only) -->
+            <div id="music-eq" class="hidden items-end gap-1 h-6 ml-4">
+                <div class="w-1.5 bg-amber-400 rounded-t-sm animate-[bounce_1s_infinite]"></div>
+                <div class="w-1.5 bg-amber-400 rounded-t-sm animate-[bounce_0.8s_infinite_0.1s]"></div>
+                <div class="w-1.5 bg-amber-400 rounded-t-sm animate-[bounce_1.2s_infinite_0.2s]"></div>
+                <div class="w-1.5 bg-amber-400 rounded-t-sm animate-[bounce_0.9s_infinite_0.3s]"></div>
+            </div>
+        </div>
+
+        <!-- Slide Navigation Controls -->
+        <div class="flex items-center gap-6">
+            <button type="button" onclick="prevSlide()" id="prev-btn" class="w-12 h-12 flex items-center justify-center bg-white border border-gray-200 text-gray-600 hover:bg-amber-50 rounded-full shadow disabled:opacity-30 disabled:cursor-not-allowed transition">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            
+            <div class="text-xl text-gray-600 font-bold w-16 text-center">
+                <span id="current-page">1</span> / 6
+            </div>
+            
+            <button type="button" onclick="nextSlide()" id="next-btn" class="w-12 h-12 flex items-center justify-center bg-white border border-gray-200 text-gray-600 hover:bg-amber-50 rounded-full shadow disabled:opacity-30 disabled:cursor-not-allowed transition">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+    </footer>
+
+    <!-- Custom Modal for Errors/Messages -->
+    <div id="custom-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm items-center justify-center">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-center transform scale-100 transition-transform">
+            <div class="text-red-500 text-5xl mb-4"><i class="fa-solid fa-circle-exclamation"></i></div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">알림</h3>
+            <p id="custom-modal-msg" class="text-lg text-gray-600 mb-8">메시지 내용</p>
+            <button type="button" onclick="closeModal()" class="px-8 py-3 bg-gray-800 hover:bg-gray-900 text-white rounded-full text-xl transition">
+                확인
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- Variables ---
+        let currentSlideIndex = 1;
+        const totalSlides = 6;
+        
+        const audio = document.getElementById('bg-music');
+        const musicEq = document.getElementById('music-eq');
+        
+        let cameraStream = null;
+        const videoElement = document.getElementById('webcam-video');
+        const cameraOverlay = document.getElementById('camera-overlay');
+        const stopCamBtn = document.getElementById('stop-cam-btn');
+
+        // Set initial volume
+        audio.volume = 0.4;
+
+        // --- Slide Navigation Logic ---
+        function updateSlideDisplay() {
+            // Hide all slides
+            document.querySelectorAll('.slide').forEach(slide => {
+                slide.classList.remove('active');
+            });
+            
+            // Show current slide
+            const currentSlide = document.getElementById(`slide-${currentSlideIndex}`);
+            if(currentSlide) currentSlide.classList.add('active');
+            
+            // Update page number
+            document.getElementById('current-page').innerText = currentSlideIndex;
+            
+            // Manage button states
+            document.getElementById('prev-btn').disabled = (currentSlideIndex === 1);
+            document.getElementById('next-btn').disabled = (currentSlideIndex === totalSlides);
+        }
+
+        function nextSlide() {
+            if (currentSlideIndex < totalSlides) {
+                currentSlideIndex++;
+                updateSlideDisplay();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlideIndex > 1) {
+                currentSlideIndex--;
+                updateSlideDisplay();
+            }
+        }
+
+        // Triggered by "Start!" button on Slide 1
+        function startRadio() {
+            nextSlide();
+            playMusic(); // Browsers allow audio playback after user interaction like this click
+        }
+
+        // --- Audio Control Logic ---
+        function playMusic() {
+            audio.play().then(() => {
+                musicEq.style.display = 'flex'; // Show equalizer
+            }).catch(error => {
+                console.log("Audio play prevented:", error);
+            });
+        }
+
+        function pauseMusic() {
+            audio.pause();
+            musicEq.style.display = 'none';
+        }
+
+        function stopMusic() {
+            audio.pause();
+            audio.currentTime = 0;
+            musicEq.style.display = 'none';
+        }
+
+        // Event listener to sync UI if audio loops or stops
+        audio.addEventListener('play', () => { musicEq.style.display = 'flex'; });
+        audio.addEventListener('pause', () => { musicEq.style.display = 'none'; });
+
+        // --- Camera / WebRTC Logic ---
+        async function startCamera(isPreload = false) {
+            if (cameraStream) return; // 이미 켜져 있다면 중복 실행 방지
+            
+            try {
+                // Request video stream. facingMode environment tries to use back/doc cam if available
+                cameraStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } } 
+                });
+                
+                videoElement.srcObject = cameraStream;
+                videoElement.classList.remove('hidden');
+                cameraOverlay.classList.add('hidden');
+                stopCamBtn.classList.remove('hidden');
+                
+                if (isPreload) {
+                    const preloadBtn = document.getElementById('preload-cam-btn');
+                    if (preloadBtn) {
+                        preloadBtn.innerHTML = '<i class="fa-solid fa-check"></i> 카메라 연결됨';
+                        preloadBtn.classList.remove('text-amber-500', 'border-amber-300', 'hover:bg-amber-50');
+                        preloadBtn.classList.add('bg-green-100', 'text-green-600', 'border-green-300', 'cursor-not-allowed');
+                        preloadBtn.disabled = true;
+                    }
+                    showModal("카메라(실물화상기)가 미리 연결되었습니다!\n5번째 '오늘의 사연' 페이지로 이동하면 바로 화면이 나옵니다.");
+                }
+                
+            } catch (err) {
+                console.error("Camera access error:", err);
+                showModal("카메라(실물화상기)를 찾을 수 없거나 접근 권한이 없습니다. 브라우저 설정을 확인해주세요.");
+            }
+        }
+
+        function stopCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                videoElement.srcObject = null;
+                cameraStream = null;
+            }
+            videoElement.classList.add('hidden');
+            cameraOverlay.classList.remove('hidden');
+            stopCamBtn.classList.add('hidden');
+            
+            const preloadBtn = document.getElementById('preload-cam-btn');
+            if (preloadBtn) {
+                preloadBtn.innerHTML = '<i class="fa-solid fa-video"></i> 카메라 미리 켜기';
+                preloadBtn.classList.add('text-amber-500', 'border-amber-300', 'hover:bg-amber-50');
+                preloadBtn.classList.remove('bg-green-100', 'text-green-600', 'border-green-300', 'cursor-not-allowed');
+                preloadBtn.disabled = false;
+            }
+        }
+
+        // --- Modal Logic (No alerts) ---
+        function showModal(msg) {
+            document.getElementById('custom-modal-msg').innerText = msg;
+            const modal = document.getElementById('custom-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('custom-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // Initialize state on load
+        window.onload = () => {
+            updateSlideDisplay();
+        };
+
+        // Keyboard navigation (Left/Right Arrows)
+        document.addEventListener('keydown', (e) => {
+            // Prevent changing slides if user is editing the title
+            if(document.activeElement.id === 'radio-title') return;
+
+            if (e.key === 'ArrowRight' || e.key === 'Spacebar' || e.key === ' ') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            }
+        });
+
+    </script>
+</body>
+</html>
